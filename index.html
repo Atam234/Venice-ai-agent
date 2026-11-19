@@ -33,7 +33,7 @@
   <section class="intro">
     <h1>What Android app should we build?</h1>
     <p>Tell the AI what you want. First, it will help turn your idea into a clear app plan. APK building will be connected in the next setup stage.</p>
-    <span class="tag">Powered by Cohere North Mini Code · Free</span>
+    <span class="tag">Powered by NVIDIA Nemotron 3 Ultra · Free</span>
     <div class="hint">Example: “Create a flashlight app with SOS mode and a simple dark interface.”</div>
   </section>
   <section id="chat" aria-live="polite">
@@ -46,7 +46,7 @@
     <textarea id="prompt" rows="1" placeholder="Describe the Android app you want..." aria-label="Your app idea"></textarea>
     <button id="send">Send</button>
   </div>
-  <div class="hint" style="max-width:750px;margin:7px auto 0">AI model: Cohere North Mini Code (free OpenRouter route). Free-tier usage limits apply.</div>
+  <div class="hint" style="max-width:750px;margin:7px auto 0">AI model: NVIDIA Nemotron 3 Ultra (free), with Cohere North Mini Code fallback. Free-tier limits apply.</div>
 </div>
 <script>
   const API_URL = "https://lucky-bonus-66b6.salmanusalic.workers.dev";
@@ -70,7 +70,7 @@
       if(!response.ok)throw new Error(data.error||"Request failed");
       const answer=data.reply||"No response returned.";
       history.push({role:"assistant",content:answer});addMessage("assistant",answer);
-      statusEl.textContent="Model used: Cohere North Mini Code (free)";
+      statusEl.textContent="AI response received. Primary: NVIDIA Nemotron 3 Ultra (free); fallback may be used if needed.";
     }catch(err){statusEl.textContent="Error: "+err.message;}
     finally{send.disabled=false;input.focus();}
   }
