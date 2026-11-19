@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>My AI App Builder</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b1020;--panel:#121a2b;--line:#26344b;--text:#eef3fb;--muted:#9aa9bf;--blue:#3478f6;--green:#18a66a}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+    header{position:sticky;top:0;background:#101827;border-bottom:1px solid var(--line);padding:15px 16px;display:flex;align-items:center;gap:12px;z-index:2}
+    .logo{width:38px;height:38px;border-radius:12px;background:#1d3b70;display:grid;place-items:center;font-size:21px}
+    header strong{font-size:16px}header small{display:block;color:var(--muted);font-size:12px}
+    main{max-width:780px;margin:0 auto;padding:20px 14px 150px}
+    .intro{padding:22px 18px;background:linear-gradient(145deg,#172947,#121a2b);border:1px solid var(--line);border-radius:18px;margin-bottom:18px}
+    h1{font-size:25px;line-height:1.2;margin:0 0 9px}.intro p{color:#c3cee0;line-height:1.55;margin:0}
+    .hint{font-size:12px;color:var(--muted);margin-top:12px}
+    #chat{display:flex;flex-direction:column;gap:12px}
+    .msg{max-width:92%;padding:13px 15px;border-radius:16px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+    .assistant{background:var(--panel);border:1px solid var(--line);align-self:flex-start}
+    .user{background:#1c4f9d;align-self:flex-end}
+    .composer{position:fixed;bottom:0;left:0;right:0;padding:12px max(14px,calc((100vw - 750px)/2));background:#0b1020ee;border-top:1px solid var(--line);backdrop-filter:blur(12px)}
+    .composer-inner{max-width:750px;margin:auto;display:flex;gap:9px;align-items:flex-end}
+    textarea{flex:1;min-height:52px;max-height:140px;resize:vertical;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;color:var(--text);font:inherit}
+    button{border:0;border-radius:14px;background:var(--blue);color:white;font-weight:650;padding:15px 18px;min-height:52px}
+    button:disabled{opacity:.5}#status{max-width:750px;margin:0 auto 8px;color:var(--muted);font-size:12px;min-height:16px}
+    .tag{display:inline-block;padding:4px 8px;border-radius:99px;background:#173d32;color:#83e2b5;font-size:11px;margin-top:12px}
+  </style>
+</head>
+<body>
+<header><div class="logo">⚙️</div><div><strong>My AI App Builder</strong><small>Describe an Android app. Build it step by step.</small></div></header>
+<main>
+  <section class="intro">
+    <h1>What Android app should we build?</h1>
+    <p>Tell the AI what you want. First, it will help turn your idea into a clear app plan. APK building will be connected in the next setup stage.</p>
+    <span class="tag">Prototype · AI chat setup</span>
+    <div class="hint">Example: “Create a flashlight app with SOS mode and a simple dark interface.”</div>
+  </section>
+  <section id="chat" aria-live="polite">
+    <div class="msg assistant">Hi! I'm your Android App Builder assistant. Describe the app you want to create, including its features and design. We'll turn it into a project plan first.</div>
+  </section>
+</main>
+<div class="composer">
+  <div id="status"></div>
+  <div class="composer-inner">
+    <textarea id="prompt" rows="1" placeholder="Describe the Android app you want..." aria-label="Your app idea"></textarea>
+    <button id="send">Send</button>
+  </div>
+</div>
+<script>
+  // Set this to your deployed Cloudflare Worker URL in the next setup step.
+  const API_URL = "PASTE_YOUR_CLOUDFLARE_WORKER_URL_HERE";
+  const chat = document.getElementById("chat");
+  const input = document.getElementById("prompt");
+  const send = document.getElementById("send");
+  const statusEl = document.getElementById("status");
+  const history = [];
+  function addMessage(role,text){
+    const el=document.createElement("div");
+    el.className="msg "+(role==="user"?"user":"assistant");
+    el.textContent=text;chat.appendChild(el);window.scrollTo(0,document.body.scrollHeight);
+  }
+  async function submit(){
+    const text=input.value.trim();if(!text||send.disabled)return;
+    if(API_URL==="PASTE_YOUR_CLOUDFLARE_WORKER_URL_HERE"){
+      statusEl.textContent="Backend setup is not finished yet. Your message was not sent.";
+      return;
+    }
+    addMessage("user",text);history.push({role:"user",content:text});input.value="";
+    send.disabled=true;statusEl.textContent="AI is thinking...";
+    try{
+      const response=await fetch(API_URL+"/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history})});
+      const data=await response.json();
+      if(!response.ok)throw new Error(data.error||"Request failed");
+      const answer=data.reply||"No response returned.";
+      history.push({role:"assistant",content:answer});addMessage("assistant",answer);statusEl.textContent="";
+    }catch(err){statusEl.textContent="Error: "+err.message;}
+    finally{send.disabled=false;input.focus();}
+  }
+  send.addEventListener("click",submit);
+  input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();submit();}});
+</script>
+</body>
+</html>
