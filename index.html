@@ -11,7 +11,7 @@
     header{position:sticky;top:0;background:#101827;border-bottom:1px solid var(--line);padding:15px 16px;display:flex;align-items:center;gap:12px;z-index:2}
     .logo{width:38px;height:38px;border-radius:12px;background:#1d3b70;display:grid;place-items:center;font-size:21px}
     header strong{font-size:16px}header small{display:block;color:var(--muted);font-size:12px}
-    main{max-width:780px;margin:0 auto;padding:20px 14px 150px}
+    main{max-width:780px;margin:0 auto;padding:20px 14px 190px}
     .intro{padding:22px 18px;background:linear-gradient(145deg,#172947,#121a2b);border:1px solid var(--line);border-radius:18px;margin-bottom:18px}
     h1{font-size:25px;line-height:1.2;margin:0 0 9px}.intro p{color:#c3cee0;line-height:1.55;margin:0}
     .hint{font-size:12px;color:var(--muted);margin-top:12px}
@@ -25,6 +25,9 @@
     button{border:0;border-radius:14px;background:var(--blue);color:white;font-weight:650;padding:15px 18px;min-height:52px}
     button:disabled{opacity:.5}#status{max-width:750px;margin:0 auto 8px;color:var(--muted);font-size:12px;min-height:16px}
     .tag{display:inline-block;padding:4px 8px;border-radius:99px;background:#173d32;color:#83e2b5;font-size:11px;margin-top:12px}
+    .model-row{max-width:750px;margin:0 auto 9px;display:flex;align-items:center;gap:10px}
+    .model-row label{font-size:12px;color:var(--muted);white-space:nowrap}
+    select{min-width:0;flex:1;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px;color:var(--text);font:inherit;font-size:14px}
   </style>
 </head>
 <body>
@@ -33,7 +36,7 @@
   <section class="intro">
     <h1>What Android app should we build?</h1>
     <p>Tell the AI what you want. First, it will help turn your idea into a clear app plan. APK building will be connected in the next setup stage.</p>
-    <span class="tag">Prototype · AI chat setup</span>
+    <span class="tag">AI chat · Model selector</span>
     <div class="hint">Example: “Create a flashlight app with SOS mode and a simple dark interface.”</div>
   </section>
   <section id="chat" aria-live="polite">
@@ -42,17 +45,25 @@
 </main>
 <div class="composer">
   <div id="status"></div>
+  <div class="model-row">
+    <label for="model">AI model</label>
+    <select id="model" aria-label="Choose AI model">
+      <option value="free">OpenRouter Free · automatic free model</option>
+      <option value="venice">Venice Uncensored · paid model</option>
+    </select>
+  </div>
   <div class="composer-inner">
     <textarea id="prompt" rows="1" placeholder="Describe the Android app you want..." aria-label="Your app idea"></textarea>
     <button id="send">Send</button>
   </div>
+  <div class="hint" style="max-width:750px;margin:7px auto 0">Venice Uncensored is a paid model. Check your OpenRouter balance and usage before selecting it.</div>
 </div>
 <script>
-  // Set this to your deployed Cloudflare Worker URL in the next setup step.
   const API_URL = "https://lucky-bonus-66b6.salmanusalic.workers.dev";
   const chat = document.getElementById("chat");
   const input = document.getElementById("prompt");
   const send = document.getElementById("send");
+  const modelSelect = document.getElementById("model");
   const statusEl = document.getElementById("status");
   const history = [];
   function addMessage(role,text){
@@ -62,18 +73,15 @@
   }
   async function submit(){
     const text=input.value.trim();if(!text||send.disabled)return;
-    if(API_URL==="PASTE_YOUR_CLOUDFLARE_WORKER_URL_HERE"){
-      statusEl.textContent="Backend setup is not finished yet. Your message was not sent.";
-      return;
-    }
     addMessage("user",text);history.push({role:"user",content:text});input.value="";
     send.disabled=true;statusEl.textContent="AI is thinking...";
     try{
-      const response=await fetch(API_URL+"/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history})});
+      const response=await fetch(API_URL+"/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history,model:modelSelect.value})});
       const data=await response.json();
       if(!response.ok)throw new Error(data.error||"Request failed");
       const answer=data.reply||"No response returned.";
-      history.push({role:"assistant",content:answer});addMessage("assistant",answer);statusEl.textContent="";
+      history.push({role:"assistant",content:answer});addMessage("assistant",answer);
+      statusEl.textContent="Model used: "+(modelSelect.value==="venice"?"Venice Uncensored":"OpenRouter Free");
     }catch(err){statusEl.textContent="Error: "+err.message;}
     finally{send.disabled=false;input.focus();}
   }
