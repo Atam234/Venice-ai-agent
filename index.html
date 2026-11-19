@@ -25,10 +25,7 @@
     button{border:0;border-radius:14px;background:var(--blue);color:white;font-weight:650;padding:15px 18px;min-height:52px}
     button:disabled{opacity:.5}#status{max-width:750px;margin:0 auto 8px;color:var(--muted);font-size:12px;min-height:16px}
     .tag{display:inline-block;padding:4px 8px;border-radius:99px;background:#173d32;color:#83e2b5;font-size:11px;margin-top:12px}
-    .model-row{max-width:750px;margin:0 auto 9px;display:flex;align-items:center;gap:10px}
-    .model-row label{font-size:12px;color:var(--muted);white-space:nowrap}
-    select{min-width:0;flex:1;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px;color:var(--text);font:inherit;font-size:14px}
-  </style>
+    </style>
 </head>
 <body>
 <header><div class="logo">⚙️</div><div><strong>My AI App Builder</strong><small>Describe an Android app. Build it step by step.</small></div></header>
@@ -36,7 +33,7 @@
   <section class="intro">
     <h1>What Android app should we build?</h1>
     <p>Tell the AI what you want. First, it will help turn your idea into a clear app plan. APK building will be connected in the next setup stage.</p>
-    <span class="tag">AI chat · Model selector</span>
+    <span class="tag">Powered by Cohere North Mini Code · Free</span>
     <div class="hint">Example: “Create a flashlight app with SOS mode and a simple dark interface.”</div>
   </section>
   <section id="chat" aria-live="polite">
@@ -45,25 +42,17 @@
 </main>
 <div class="composer">
   <div id="status"></div>
-  <div class="model-row">
-    <label for="model">AI model</label>
-    <select id="model" aria-label="Choose AI model">
-      <option value="free">OpenRouter Free · automatic free model</option>
-      <option value="venice">Venice Uncensored · paid model</option>
-    </select>
-  </div>
   <div class="composer-inner">
     <textarea id="prompt" rows="1" placeholder="Describe the Android app you want..." aria-label="Your app idea"></textarea>
     <button id="send">Send</button>
   </div>
-  <div class="hint" style="max-width:750px;margin:7px auto 0">Venice Uncensored is a paid model. Check your OpenRouter balance and usage before selecting it.</div>
+  <div class="hint" style="max-width:750px;margin:7px auto 0">AI model: Cohere North Mini Code (free OpenRouter route). Free-tier usage limits apply.</div>
 </div>
 <script>
   const API_URL = "https://lucky-bonus-66b6.salmanusalic.workers.dev";
   const chat = document.getElementById("chat");
   const input = document.getElementById("prompt");
   const send = document.getElementById("send");
-  const modelSelect = document.getElementById("model");
   const statusEl = document.getElementById("status");
   const history = [];
   function addMessage(role,text){
@@ -76,12 +65,12 @@
     addMessage("user",text);history.push({role:"user",content:text});input.value="";
     send.disabled=true;statusEl.textContent="AI is thinking...";
     try{
-      const response=await fetch(API_URL+"/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history,model:modelSelect.value})});
+      const response=await fetch(API_URL+"/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history})});
       const data=await response.json();
       if(!response.ok)throw new Error(data.error||"Request failed");
       const answer=data.reply||"No response returned.";
       history.push({role:"assistant",content:answer});addMessage("assistant",answer);
-      statusEl.textContent="Model used: "+(modelSelect.value==="venice"?"Venice Uncensored":"OpenRouter Free");
+      statusEl.textContent="Model used: Cohere North Mini Code (free)";
     }catch(err){statusEl.textContent="Error: "+err.message;}
     finally{send.disabled=false;input.focus();}
   }
