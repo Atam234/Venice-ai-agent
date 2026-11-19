@@ -1,0 +1,30 @@
+
+name: Venice AI Connection Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-venice:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Test Venice AI API
+        env:
+          VENICE_API_KEY: ${{ secrets.VENICE_API_KEY }}
+        run: |
+          curl --fail-with-body -sS \
+            https://api.venice.ai/api/v1/chat/completions \
+            -H "Authorization: Bearer $VENICE_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "zai-org-glm-5-1",
+              "messages": [
+                {
+                  "role": "user",
+                  "content": "Reply with: Hello! Venice AI is successfully connected to GitHub Actions."
+                }
+              ],
+              "max_tokens": 100
+            }' | jq -r '.choices[0].message.content'
+            
