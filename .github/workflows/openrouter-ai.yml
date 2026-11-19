@@ -1,0 +1,36 @@
+
+name: OpenRouter Free AI Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-openrouter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Test OpenRouter Free API
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RESPONSE=$(curl --fail-with-body -sS \
+            https://openrouter.ai/api/v1/chat/completions \
+            -H "Authorization: Bearer $OPENROUTER_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "openrouter/free",
+              "messages": [
+                {
+                  "role": "user",
+                  "content": "Reply exactly: Hello! OpenRouter Free AI is connected to GitHub Actions."
+                }
+              ],
+              "max_tokens": 100
+            }')
+
+          echo "$RESPONSE" | jq -e -r \
+            '.choices[0].message.content'
+            
