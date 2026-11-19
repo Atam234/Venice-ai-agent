@@ -70,7 +70,7 @@
       if(!response.ok)throw new Error(data.error||"Request failed");
       const answer=data.reply||"No response returned.";
       history.push({role:"assistant",content:answer});addMessage("assistant",answer);
-      statusEl.textContent="AI response received. Primary: NVIDIA Nemotron 3 Ultra (free); fallback may be used if needed.";
+      statusEl.textContent="Model used: "+(data.model||"NVIDIA Nemotron 3 Ultra / Cohere North Mini Code");
     }catch(err){statusEl.textContent="Error: "+err.message;}
     finally{send.disabled=false;input.focus();}
   }
